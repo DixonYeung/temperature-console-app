@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="Temperature console app"
+      content="a console app that alert when freeze and boil"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <title>Temperature console app</title>
+    <style>
+      body{
+        height: calc(100vh - 2rem);
+      }
+      span{
+        margin-left: 5px;
+      }
+      .program{
+          max-width: 400px;
+          height: 100%;
+          max-height: 300px;
+          border: 1px solid rgb(190, 190, 190);
+          margin: 0 auto;
+          padding: 5px;
+          background-color: black;
+          color: rgb(226, 226, 226);
+          font-family:monospace;
+      }
+      .title{
+          display: flex;
+          height: 2rem;
+          font-family:monospace;
+          /* font-size: 1rem; */
+          padding-left: 5px;
+          align-items: center;
+          justify-content: center;
+      }
+      .consoleOutput{
+          width: 100%;
+          height: 100%;
+          max-height: calc(100% - 2rem - 2rem);
+          overflow-y: scroll;
+          padding-bottom: 10px;
+      }
+      .consoleInput{
+          width: auto;
+          /* height: 2rem; */
+          background-color: black;
+          color: rgb(226, 226, 226);
+          border:none;
+          font-family:monospace;
+      }
+      .consoleInput:focus{
+          outline: none !important;
+      }
+      #clearButton{
+          font-family:monospace;
+      }
+      .buttonGroup{
+          display: flex;
+          width: 100%;
+          justify-content: center;
+      }
+  </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+      <div class="program">
+          <div class="title">-- Welcome to Simulated Console --</div>
+          <div class="consoleOutput"></div>
+          <span>C:\Users\guest ></span><input type="text" class="consoleInput" id="consoleInput" >
+      </div>
+      <div class="buttonGroup"><button id="clearButton" onclick="clearButtonClick()">Start over</button></div>
+  
+  
+  </body>
+  <script>
+
+    var consoleOutputString = "<span>Please enter the freezing point:</span>";
+    var userInput = "";
+    var consoleOutputArray = [];
+    var count = 0;
+    var freezArray = [0,1];//this means [not this state, is this state] => [freezed, unfreezed]
+    var boilArray = [0,1];
+    var isNumber = false;
+
+
+    window.onload = function(){
+        document.getElementById("consoleInput").focus();
+        document.querySelector(".consoleOutput").innerHTML = consoleOutputString;
+        document.getElementById("consoleInput").addEventListener("input", handler);
+        document.getElementById("consoleInput").addEventListener("keypress", handler);
+        window.addEventListener('click',function(event){
+            event.target == document.getElementById("consoleInput") ? null : document.getElementById("consoleInput").focus();
+        })
+    }
+
+    
+
+    function handler(event){
+        if(event.__proto__.constructor.name == "InputEvent"){
+            userInput = event.target.value;
+        }
+        else if(event.__proto__.constructor.name == "KeyboardEvent"){
+            if(event.keyCode == 13){
+                let dotIndex = -1;
+                let dotCount = 0;
+                let minusIndex = -1;
+                let minusCount = 0;
+                for(var i=0; i<userInput.length; i++){
+                    if( (userInput.charCodeAt(i) >= 48 && userInput.charCodeAt(i) <= 57) || userInput.charCodeAt(i) == 46 || userInput.charCodeAt(i) == 45){
+                        if(userInput.charCodeAt(i) == 46){
+                            dotIndex = i;
+                            dotCount++;
+                        }
+                        if(userInput.charCodeAt(i) == 45){
+                            minusIndex = i;
+                            minusCount++;
+                        }
+                        isNumber = true;
+                    }
+                    else{
+                        isNumber = false;
+                    }
+                }
+                if(  dotIndex == 0 || dotIndex == userInput.length-1 || dotCount > 1){
+                    isNumber = false;
+                }
+                if(  minusIndex > 0 || minusCount > 1 || minusIndex == userInput.length -1){
+                    isNumber = false;
+                }
+
+                if(userInput.length > 0 && isNumber){
+                    var consoleOutput = document.querySelector(".consoleOutput");
+                    consoleOutputString = consoleOutput.innerHTML;
+
+                    if(count == 0){
+                        consoleOutputString = consoleOutputString + "<br><span>" + userInput +"</span><br><span>Please enter the boiling point:</span>";
+                        consoleOutput.innerHTML = consoleOutputString;
+                        consoleOutputArray.push(userInput);
+                    }
+                    else if(count == 1){
+                        consoleOutputString = consoleOutputString + "<br><span>" + userInput +"</span><br><span>Please enter the fluctuation range:</span>";
+                        consoleOutput.innerHTML = consoleOutputString;
+                        consoleOutputArray.push(userInput);
+                    }
+                    else if(count == 2){
+                        consoleOutputString = consoleOutputString + "<br><span>" + userInput +"</span><br><br><span>Program start, input value:</span>";
+                        consoleOutput.innerHTML = consoleOutputString;
+                        consoleOutputArray.push(userInput);
+                    }
+                    if(count >= 3){
+                        consoleOutputString = consoleOutputString + "<br><span>" + userInput +"</span>";
+                        consoleOutput.innerHTML = consoleOutputString;
+                        consoleOutputArray.push(userInput);
+                        if(parseFloat(userInput) <= parseFloat(consoleOutputArray[0])  && freezArray[0]==0 && freezArray[1]==1 && boilArray[0]!=1 && boilArray[1]!=0 ){
+                            consoleOutputString = consoleOutputString + "<span>freezing</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            freezArray = [1,0];
+                            
+                        }
+                        else if(parseFloat(userInput) > parseFloat(consoleOutputArray[0]) + parseFloat(consoleOutputArray[2])  && freezArray[0]==1 && freezArray[1]==0 && parseFloat(userInput) < parseFloat(consoleOutputArray[1])){
+                            consoleOutputString = consoleOutputString + "<span>unfreezing</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            freezArray = [0,1];
+                        }
+                        else if(parseFloat(userInput) >= parseFloat(consoleOutputArray[1])  && boilArray[0]==0 && boilArray[1]==1 && freezArray[0]!=1 && freezArray[1]!=0 ){
+                            consoleOutputString = consoleOutputString + "<span>boiling</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            boilArray = [1,0];
+                        }
+                        else if(parseFloat(userInput) < parseFloat(consoleOutputArray[1]) - parseFloat(consoleOutputArray[2]) && boilArray[0]==1 && boilArray[1]==0 && parseFloat(userInput) > parseFloat(consoleOutputArray[0])){
+                            consoleOutputString = consoleOutputString + "<span>unboiling</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            boilArray = [0,1];
+                        }
+                        else if(parseFloat(userInput) > parseFloat(consoleOutputArray[0]) + parseFloat(consoleOutputArray[2])  && freezArray[0]==1 && freezArray[1]==0 && parseFloat(userInput) >= parseFloat(consoleOutputArray[1])  && boilArray[0]==0 && boilArray[1]==1){
+                            consoleOutputString = consoleOutputString + "<span>unfreezing</span><span>boiling</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            freezArray = [0,1];
+                            boilArray = [1,0];
+                        }
+                        else if(parseFloat(userInput) < parseFloat(consoleOutputArray[1]) - parseFloat(consoleOutputArray[2]) && boilArray[0]==1 && boilArray[1]==0 && parseFloat(userInput) <= parseFloat(consoleOutputArray[0])  && freezArray[0]==0 && freezArray[1]==1){
+                            consoleOutputString = consoleOutputString + "<span>unboiling</span><span>freezing</span>";
+                            consoleOutput.innerHTML = consoleOutputString;
+                            boilArray = [0,1];
+                            freezArray = [1,0];
+                        }
+                    }
+                    
+                    event.target.value = "";
+                    userInput = "";
+
+                    count = count + 1;
+                    document.querySelector(".consoleOutput").scrollTop = document.querySelector(".consoleOutput").scrollHeight;
+                }
+                else{
+                    alert("Input must be numbers & not NULL");
+                }
+            }
+        }
+    }
+
+
+    function clearButtonClick(){
+        console.log('clear button clicked');
+        consoleOutputString = "<span>Please enter the freezing point:</span>";
+        document.querySelector(".consoleOutput").innerHTML = consoleOutputString;
+        consoleOutputArray = [];
+        freezArray = [0,1];
+        boilArray = [0,1];
+        count = 0;
+        isNumber = false;
+    }
+
+
+
+    
+</script>
+</html>
